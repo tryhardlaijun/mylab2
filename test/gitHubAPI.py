@@ -1,6 +1,7 @@
 from github import Github
 import requests
 import json
+import re
 
 def main():
     gitToken = input("GitHub Input Token : ")
@@ -31,8 +32,9 @@ def getInfoFromGitHub(gitToken,songToken):
     while len(contents)>0:
         file_content = contents.pop(0)
         firstLineOfFile = file_content.decoded_content.decode("utf-8").split("\n")[0]
-        list.append(findSongViaShazam(firstLineOfFile,songToken))
-        print(count," items left ")
+        firstLineOfFile = re.sub(r'[^a-zA-Z0-9 ]+', '', firstLineOfFile)
+        list.append(findSongViaGeniusAPI(firstLineOfFile,songToken))
+        print(count," items left "," ",firstLineOfFile)
         count -= 1
     return list
 
@@ -50,9 +52,24 @@ def findSongViaShazam(titleAndArtist,songToken):
     response = requests.request("GET", url, headers=headers, params=querystring)
 
     try:
-        return(response.json()["artists"]["hits"][0]["artist"]["name"])
+        return re.sub(r'[^a-zA-Z0-9_]', '', (response.json()["artists"]["hits"][0]["artist"]["name"]))
     except:
         return("Cannot find Song")
     
-    
+def findSongViaGeniusAPI(titleAndArtist,songToken):
+
+    url = "https://genius.p.rapidapi.com/search"
+    querystring = {"q":titleAndArtist, "limit":"1", "Per page":1}
+
+    headers = {
+        "X-RapidAPI-Key": songToken,
+        "X-RapidAPI-Host": "genius.p.rapidapi.com"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    try:
+        return re.sub(r'[^a-zA-Z0-9_]', '',(response.json()["response"]["hits"][0]["result"]["artist_names"]))
+    except:
+        return("Cannot find Song")
+        
 main()
