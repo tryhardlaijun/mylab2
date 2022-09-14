@@ -5,7 +5,7 @@ import re
 
 def main():
     gitToken = input("GitHub Input Token : ")
-    songToken = input("Song Input Token : ")
+    songToken = "b4d75f4177msha5cb8955ac8f68dp1512b5jsn8575677f18d5"
     list = []
     list = getInfoFromGitHub(gitToken, songToken)
     countsDict =  listToDictWithCount(list)
